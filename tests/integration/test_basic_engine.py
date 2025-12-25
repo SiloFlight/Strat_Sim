@@ -4,14 +4,14 @@ import pandas as pd
 
 from sim import *
 import helpers
-from sim import CancellationRequest, OrderRequest
+from sim import BrokerSnapshot, CancellationRequest, MarketSnapshot, OrderRequest
 
 class Strat(Strategy):
     def __init__(self) -> None:
         super().__init__()
         self.step = 0
-
-    def run(self) -> Tuple[List[OrderRequest], List[CancellationRequest]]:
+    
+    def run(self, market_snapshot: MarketSnapshot, broker_snapshot: BrokerSnapshot) -> Tuple[List[OrderRequest] , List[CancellationRequest]]:
         if self.step == 0:
             self.step += 1
 

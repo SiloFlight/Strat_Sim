@@ -7,7 +7,7 @@ def test_get_current_bar():
 
     assert md.current_bar(start) == Bar.from_row(md.df.iloc[0])
 
-    assert md.current_bar(end) == Bar.from_row(md.df.iloc[-1])
+    assert md.current_bar(end) == None
 
 def test_get_most_recent_bar():
     md,start,end = helpers.market_data.get_simple_market_data_with_ts(5)

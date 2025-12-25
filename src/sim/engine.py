@@ -108,7 +108,7 @@ class Engine:
             case EventType.RUN_STRATEGY:
                 event = safe_event_cast(event,RunStrategyEvent)
 
-                results = self.strategy.run()
+                results = self.strategy.run(self.market.get_snapshot(ts),self.broker.get_snapshot())
 
                 for ev in self.broker.handle_requests(ts,*results):
                     self.insert_event(ev)

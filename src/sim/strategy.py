@@ -8,5 +8,5 @@ class Strategy(ABC):
     def __init__(self) -> None:
         super().__init__()
 
-    def run(self) -> Tuple[List["OrderRequest"],List["CancellationRequest"]]:
+    def run(self, market_snapshot : "MarketSnapshot", broker_snapshot : "BrokerSnapshot") -> Tuple[List["OrderRequest"],List["CancellationRequest"]]:
         return [],[]

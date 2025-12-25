@@ -2,7 +2,7 @@
 from sim.fill import Fill
 from sim.fill_logic import FillLogic,CappedFill
 from sim.fee_model import FeeModel,PerShareFee
-from sim.market_data import Bar,MarketData
+from sim.market_data import Bar,MarketData,MarketDataSnapshot
 from sim.events import Event,EventType,RunStrategyEvent,UpdateMarketDataEvent,FillArrivesAtBrokerEvent,OrderArrivesAtMarketEvent,CancellationArrivesAtBrokerEvent,CancellationArrivesAtMarketEvent
 from sim.portfolio import Portfolio,PortfolioSnapshot
 
@@ -22,7 +22,7 @@ from sim.cancellation_result import CancellationOutcome,CancellationResult
 
 # Logic Imports
 
-from sim.broker import Broker
+from sim.broker import Broker,BrokerSnapshot
 from sim.strategy import Strategy
-from sim.market import Market
+from sim.market import Market,MarketSnapshot
 from sim.engine import Engine

@@ -3,7 +3,7 @@ from typing import Dict,List,TYPE_CHECKING
 import pandas as pd
 
 from sim.order import Order
-from sim.portfolio import Portfolio
+from sim.portfolio import Portfolio,PortfolioSnapshot
 from sim.events import Event,EventType,OrderArrivesAtMarketEvent,CancellationArrivesAtMarketEvent
 from sim.cancellation import Cancellation
 from sim.cancellation_result import CancellationOutcome
@@ -21,6 +21,12 @@ Responsibilities
 
 Design Note - V1: The broker currently has very few guardrails on request execution. The broker only catches references to invalid order_ids. Invalid execution states from fills are captured by as fatal errors by Portfolio.
 """
+
+class BrokerSnapshot:
+    def __init__(self, broker : "Broker") -> None:
+        self.portfolio = broker.portfolio.get_snapshot()
+        self.cancellations = {order_id : cancellation.get_snapshot() for order_id, cancellation in broker.cancellations.items()}
+        self.orders = {order_id : order.get_snapshot() for order_id, order in broker.orders.items()}
 
 class Broker:
     fee_model : "FeeModel"
@@ -108,3 +114,6 @@ class Broker:
         self.current_order_id += 1
         
         return order_id
+    
+    def get_snapshot(self):
+        return BrokerSnapshot(self)

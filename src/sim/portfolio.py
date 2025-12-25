@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 class PortfolioSnapshot:
     cash : float
     position : int
+    average_cost : float
+    realized_pnl : float
 
 class Portfolio:
     cash : float
@@ -54,5 +56,7 @@ class Portfolio:
     def get_snapshot(self):
         return PortfolioSnapshot(
             cash=self.cash,
-            position=self.position
+            position=self.position,
+            average_cost=self.average_cost,
+            realized_pnl=self.realized_pnl
         )

@@ -15,6 +15,12 @@ class CancellationState(Enum):
     CANCELLED = "CANCELLED"
     NO_OP = "NO_OP"
 
+class CancellationSnapshot:
+    def __init__(self, cancellation : "Cancellation") -> None:
+        self.state = cancellation.state
+        self.order_id = cancellation.order_id
+        self.submission_ts = cancellation.submission_ts
+
 class Cancellation:
     state : "CancellationState"
     order_id : int
@@ -45,3 +51,6 @@ class Cancellation:
     
     def get_submission(self) -> "CancellationSubmission":
         return CancellationSubmission(self.order_id)
+    
+    def get_snapshot(self):
+        return CancellationSnapshot(self)

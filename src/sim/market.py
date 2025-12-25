@@ -16,6 +16,11 @@ Responsibilities:
 Design Notes - V1: Currently a single symbol structure. Will be extended to allow multiple symbols.
 """
 
+class MarketSnapshot:
+    market_data : "MarketDataSnapshot"
+    def __init__(self, market : "Market", ts : pd.Timestamp) -> None:
+        self.market_data = market.market_data.get_snapshot(ts)
+
 class Market:
     market_data : "MarketData"
     order_infos : Dict[int,"OrderInfo"]
@@ -92,3 +97,6 @@ class Market:
         
         cancellation_result = CancellationResult(order_id,ts,CancellationOutcome.NO_OP)
         return [CancellationArrivesAtBrokerEvent(EventType.CANCELLATION_ARRIVES_AT_BROKER,ts+self.latency,cancellation_result)]
+    
+    def get_snapshot(self, ts : pd.Timestamp):
+        return MarketSnapshot(self,ts)

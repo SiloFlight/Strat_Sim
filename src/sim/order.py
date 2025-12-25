@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import List,Optional,TYPE_CHECKING
+from dataclasses import dataclass
 
 from sim.order_submission import OrderSubmission
 
@@ -17,14 +18,24 @@ class OrderState(Enum):
     CANCEL_PENDING = "CANCEL_PENDING"
     CANCELLED = "CANCELLED"
 
+class OrderSnapshot():
+   def __init__(self, order : "Order") -> None:
+       self.order_id = order.order_id
+       self.side = order.side
+       self.order_type = order.order_type
+       self.qty = order.qty
+       self.state = order.state
+       self.fills = order.fills
+       self.limit = order.limit
+   
 class Order():
     order_id : int
     side : "OrderSide"
     order_type : "OrderType"
     qty : int
-    limit : Optional[float] = None
     state : "OrderState"
     fills : List["Fill"]
+    limit : Optional[float] = None
 
     def __init__(self, order_request : "OrderRequest", order_id : int) -> None:
         self.order_id = order_id
@@ -106,3 +117,6 @@ class Order():
             return None
         else:
             return sum(fill_prices) / fill_qty
+    
+    def get_snapshot(self):
+        return OrderSnapshot(self)
