@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Tuple
 
 import pandas as pd
 
@@ -26,16 +27,6 @@ class Bar():
                    trades=row["trades"],
                    VWAP=row["VWAP"])
 
-
-"""
-Market Data
-
-Responsibilities
-- Timestamp based reference to bars
-
-Design Note - V1: current_bar implicitly returns final bar even after data is exhausted. MarketData assumed that df is sorted and disjoint temporally validation of that assumption is a future priority.
-"""
-
 class MarketDataSnapshot:
     df : pd.DataFrame
 
@@ -48,10 +39,21 @@ class MarketDataSnapshot:
     def most_recent_bar(self, ts : pd.Timestamp):
         return MarketData.most_recent_bar_from_df(self.df,ts)
 
+EXPECTED_COLUMNS = set(["start_ts","end_ts","open","high","low","close","volume","trades","VWAP"])
+
 class MarketData:
+    """
+    Market Data
+
+    Responsibilities
+    - Timestamp based reference to bars
+    """
     df : pd.DataFrame
 
     def __init__(self, df) -> None:
+        validity,msg = MarketData.validate_df(df)
+        if not validity:
+            raise ValueError(f"Market Data constructed with invalid df : {msg}")
         self.df = df
     
     @staticmethod
@@ -73,6 +75,47 @@ class MarketData:
             return None
         else:
             return Bar.from_row(new_df.iloc[-1])
+    
+    @staticmethod
+    def validate_df(df : pd.DataFrame) -> Tuple[bool,str]:
+        if len(EXPECTED_COLUMNS-set(df.columns)) != 0:
+            return False, "missing column(s)"
+        
+        timestamp_cols = ["start_ts","end_ts"]
+        float_cols = ["open","high","low","close","VWAP"]
+        int_cols = ["volume","trades"]
+
+        # Datatype correctness
+
+        for col in timestamp_cols:
+            if not pd.api.types.is_datetime64_any_dtype(df[col]):
+                return False, f"invalid datetime column: {col}"
+        
+        for col in float_cols:
+            if not pd.api.types.is_any_real_numeric_dtype(df[col]):
+                print(df[col].dtype)
+                return False, f"invalid float column: {col}"
+        
+        for col in int_cols:
+            if not pd.api.types.is_integer_dtype(df[col]):
+                return False, f"invalid integer column: {col}"
+        
+        # Timestamp monotonicity
+        if not df["start_ts"].is_monotonic_increasing or df["start_ts"].duplicated().any():
+            return False,"start_ts not strictly increasing"
+        
+        if not df["end_ts"].is_monotonic_increasing or df["end_ts"].duplicated().any():
+            return False,"end_ts not strictly increasing"
+        
+        #Valid Bar Size
+        if not (df["start_ts"] < df["end_ts"]).all():
+            return False, "start_ts not strictly less than end_ts"
+
+        # Timestamp disjointness
+        if not (df["end_ts"].iloc[:-1].reset_index(drop=True) <= df["start_ts"].iloc[1:].reset_index(drop=True)).all():
+            return False, "timestamps are not disjoint"
+        
+        return True,""
 
     def current_bar(self, ts : pd.Timestamp) -> Bar | None:
         return MarketData.current_bar_from_df(self.df,ts)
