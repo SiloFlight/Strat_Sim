@@ -79,3 +79,20 @@ def test_cancellation_post_fill():
     assert isinstance(cancellation_events[0],CancellationArrivesAtBrokerEvent)
     assert order_id in M1.cancelled_orders
     assert cancellation_events[0].cancellation_result.cancellation_outcome == CancellationOutcome.NO_OP
+
+def test_limit_order():
+    md,start,end = helpers.market_data.get_simple_market_data_with_ts(5)
+    delta = (end-start)/5
+    latency = pd.Timedelta(minutes=0)
+    symbol = "sym1"
+    market = Market({symbol : md}, CappedFill(5), latency)
+
+    order_submission = OrderSubmission(order_id=0,side=OrderSide.SELL,qty=5,symbol=symbol,order_type=OrderType.LIMIT,limit=3)
+
+    events = market.handle_order_arrival(start,order_submission)
+
+    assert len(events) == 0
+
+    events = market.handle_order_arrival(end-delta,order_submission)
+
+    assert len(events) == 1
