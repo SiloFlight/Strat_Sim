@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class Fill:
     order_id : int
     qty : int
+    symbol : str
     side : "OrderSide"
     fill_price : float
     ts : pd.Timestamp

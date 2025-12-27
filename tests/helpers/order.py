@@ -1,7 +1,8 @@
 from sim import *
 
 def get_created_order():
-    return Order(OrderRequest(OrderSide.BUY,OrderType.MARKET,100),0)
+    return Order(
+        OrderRequest(side=OrderSide.BUY,order_type=OrderType.MARKET,qty=100,symbol=""),0)
 
 def get_submitted_order():
     order = get_created_order()

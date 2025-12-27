@@ -15,6 +15,7 @@ class OrderRequest():
     side : OrderSide
     order_type : OrderType
     qty : int
+    symbol : str
     limit : Optional[float] = None
 
 

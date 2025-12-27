@@ -11,7 +11,7 @@ def test_handle_requests():
 
     ts = pd.Timestamp("2000-01-01")
 
-    order_request = OrderRequest(OrderSide.BUY,OrderType.MARKET,10)
+    order_request = OrderRequest(side=OrderSide.BUY,order_type=OrderType.MARKET,qty=10,symbol="sym1")
     
     events = broker.handle_requests(ts,[order_request],[])
 
@@ -40,8 +40,9 @@ def test_handle_fill():
     broker = Broker(100,PerShareFee(1),delta)
 
     order_qty = 10
+    symbol = "sym1"
 
-    order_req = OrderRequest(OrderSide.BUY,OrderType.MARKET,order_qty)
+    order_req = OrderRequest(OrderSide.BUY,OrderType.MARKET,order_qty,symbol=symbol)
 
     ts = pd.Timestamp("2000-01-01")
 
@@ -55,26 +56,41 @@ def test_handle_fill():
     assert order.remaining_quantity == order_qty
 
     with pytest.raises(ValueError,match="greater than remaining qty"):
-        broker.handle_fill(Fill(order_id,order_qty+1,OrderSide.BUY,9,ts+2*delta))
+        broker.handle_fill(Fill(order_id=order_id,
+                                qty=order_qty+1,
+                                symbol=symbol,
+                                side=OrderSide.BUY,
+                                fill_price=9,
+                                ts=ts + 2*delta))
 
-    broker.handle_fill(Fill(order_id,9,OrderSide.BUY,9,ts+delta))
+    broker.handle_fill(Fill(order_id=order_id,
+                                qty=order_qty-1,
+                                symbol=symbol,
+                                side=OrderSide.BUY,
+                                fill_price=9,
+                                ts=ts + 2*delta))
 
     assert order.state == OrderState.PARTIALLY_FILLED
     assert order.remaining_quantity == 1
     assert broker.portfolio.cash == 10
-    assert broker.portfolio.position == 9
+    assert broker.portfolio.positions[symbol] == 9
 
-    broker.handle_fill(Fill(order_id,1,OrderSide.BUY,9,ts+2*delta))
+    broker.handle_fill(Fill(order_id=order_id,
+                                qty=1,
+                                symbol=symbol,
+                                side=OrderSide.BUY,
+                                fill_price=9,
+                                ts=ts + 2*delta))
 
     assert order.state == OrderState.FILLED
     assert order.remaining_quantity == 0
     assert broker.portfolio.cash == 0
-    assert broker.portfolio.position == 10
+    assert broker.portfolio.positions[symbol] == 10
 
     with pytest.raises(RuntimeError,match="nonexistent order"):
-        broker.handle_fill(Fill(-1,1,OrderSide.BUY,9,ts+2*delta))
-
-    
-
-
-    
+        broker.handle_fill(Fill(order_id=-1,
+                                qty=1,
+                                symbol=symbol,
+                                side=OrderSide.BUY,
+                                fill_price=9,
+                                ts=ts + 2*delta))

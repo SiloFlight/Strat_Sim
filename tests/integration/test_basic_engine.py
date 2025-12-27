@@ -12,11 +12,12 @@ class Strat(Strategy):
         self.step = 0
     
     def run(self, market_snapshot: MarketSnapshot, broker_snapshot: BrokerSnapshot) -> Tuple[List[OrderRequest] , List[CancellationRequest]]:
+        symbol = market_snapshot.get_symbols()[0]
         if self.step == 0:
             self.step += 1
 
-            order_req_1 = OrderRequest(OrderSide.BUY,OrderType.MARKET,5)
-            order_req_2 = OrderRequest(OrderSide.BUY,OrderType.MARKET,10)
+            order_req_1 = OrderRequest(side=OrderSide.BUY,order_type=OrderType.MARKET,qty=5,symbol=symbol)
+            order_req_2 = OrderRequest(side=OrderSide.BUY,order_type=OrderType.MARKET,qty=10,symbol=symbol)
             
             return [order_req_1,order_req_2],[]
         else:
@@ -29,7 +30,7 @@ def test_engine_order_cancellation_flow():
     broker = Broker(100,PerShareFee(2),delta*2)
     md,start,end = helpers.market_data.get_simple_market_data_with_ts(10)
 
-    market = Market(md,CappedFill(5),delta*2)
+    market = Market({"sym1" : md},CappedFill(5),delta*2)
 
     engine = Engine(strategy,broker,market)
 
@@ -47,7 +48,7 @@ def test_engine_order_cancellation_flow():
     print(O1.fills,O2.fills)
 
     assert broker.portfolio.cash == 60
-    assert broker.portfolio.position == 10   
+    assert broker.portfolio.positions["sym1"] == 10   
     
     assert O1.state == OrderState.FILLED
     assert O2.state == OrderState.CANCELLED

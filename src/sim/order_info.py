@@ -15,6 +15,7 @@ class OrderInfo():
     side : "OrderSide"
     remaining_qty : int
     order_type : "OrderType"
+    symbol : str
     limit : Optional[float] = None
 
     def reduce_quantity(self, qty : int):

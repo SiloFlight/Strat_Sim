@@ -31,7 +31,7 @@ class MarketDataSnapshot:
     df : pd.DataFrame
 
     def __init__(self, market_data : "MarketData", ts : pd.Timestamp) -> None:
-        self.df = market_data.df[market_data.df["end_ts"] < ts]
+        self.df = market_data.df[market_data.df["end_ts"] <= ts]
     
     def current_bar(self, ts : pd.Timestamp):
         return MarketData.current_bar_from_df(self.df,ts)

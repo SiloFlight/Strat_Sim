@@ -13,6 +13,7 @@ class OrderSubmission():
     order_id : int
     side : "OrderSide"
     qty : int
+    symbol : str
     order_type : "OrderType"
     limit : Optional[float] = None
 
@@ -35,4 +36,5 @@ class OrderSubmission():
                          side=self.side,
                          remaining_qty=self.qty,
                          order_type=self.order_type,
-                         limit=self.limit)
+                         limit=self.limit,
+                         symbol=self.symbol)

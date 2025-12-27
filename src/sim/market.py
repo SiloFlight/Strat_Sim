@@ -17,20 +17,23 @@ Design Notes - V1: Currently a single symbol structure. Will be extended to allo
 """
 
 class MarketSnapshot:
-    market_data : "MarketDataSnapshot"
+    market_datas : Dict[str,"MarketDataSnapshot"]
     def __init__(self, market : "Market", ts : pd.Timestamp) -> None:
-        self.market_data = market.market_data.get_snapshot(ts)
+        self.market_datas = {symbol : market_data.get_snapshot(ts) for symbol, market_data in market.market_datas.items()}
+    
+    def get_symbols(self) -> List[str]:
+        return list(self.market_datas.keys())
 
 class Market:
-    market_data : "MarketData"
+    market_datas : Dict[str,"MarketData"]
     order_infos : Dict[int,"OrderInfo"]
     cancelled_orders : Set[int]
     current_ts : pd.Timestamp
     fill_logic : "FillLogic"
     latency : pd.Timedelta
 
-    def __init__(self, market_data : "MarketData", fill_logic : "FillLogic", latency : pd.Timedelta) -> None:
-        self.market_data = market_data
+    def __init__(self, market_datas : Dict[str,"MarketData"], fill_logic : "FillLogic", latency : pd.Timedelta) -> None:
+        self.market_datas = market_datas
         self.latency = latency
         self.fill_logic = fill_logic
 
@@ -38,13 +41,21 @@ class Market:
         self.order_infos = {}
     
     def calculate_fill(self, order_info : "OrderInfo", ts : pd.Timestamp) -> Optional["Fill"]:
+        symbol = order_info.symbol
+        market_data = self.market_datas[symbol]
+
         fill_qty = self.fill_logic.calculate_fill_qty(order_info)
-        fill_bar = self.market_data.current_bar(ts)
+        fill_bar = market_data.current_bar(ts)
 
         if fill_bar == None or fill_qty == 0:
                 return None
         
-        fill = Fill(order_info.order_id,fill_qty,order_info.side,fill_bar.open,ts)
+        fill = Fill(order_id=order_info.order_id,
+                    qty=fill_qty,
+                    symbol=symbol,
+                    side=order_info.side,
+                    fill_price=fill_bar.open,
+                    ts=ts)
 
         return fill
 

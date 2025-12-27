@@ -6,9 +6,10 @@ import helpers
 def test_order_arrival():
     md,start,end = helpers.market_data.get_simple_market_data_with_ts(5)
     latency = pd.Timedelta(minutes=0)
-    market = Market(md, CappedFill(5), latency)
+    symbol = "sym1"
+    market = Market({symbol : md}, CappedFill(5), latency)
 
-    order_submission = OrderSubmission(0,OrderSide.BUY,5,OrderType.MARKET)
+    order_submission = OrderSubmission(order_id=0,side=OrderSide.BUY,qty=5,symbol=symbol,order_type=OrderType.MARKET)
 
     events = market.handle_order_arrival(start,order_submission)
 
@@ -26,9 +27,10 @@ def test_order_arrival():
 def test_market_update():
     md,start,end = helpers.market_data.get_simple_market_data_with_ts(5)
     latency = pd.Timedelta(minutes=0)
-    M1 = Market(md, CappedFill(10), latency)
+    symbol = "sym1"
+    M1 = Market({symbol : md}, CappedFill(10), latency)
 
-    order_submission = OrderSubmission(0,OrderSide.BUY,10,OrderType.MARKET)
+    order_submission = OrderSubmission(order_id=0,side=OrderSide.BUY,qty=10,symbol=symbol,order_type=OrderType.MARKET)
 
     M1.handle_order_arrival(start,order_submission)
 
@@ -37,11 +39,12 @@ def test_market_update():
 def test_cancellation_pre_fill():
     md,start,end = helpers.market_data.get_simple_market_data_with_ts(5)
     latency = pd.Timedelta(minutes=0)
-    M1 = Market(md, CappedFill(5), latency)
+    symbol = "sym1"
+    M1 = Market({symbol : md}, CappedFill(5), latency)
 
     order_id = 0
 
-    order_submission = OrderSubmission(order_id,OrderSide.BUY,10,OrderType.MARKET)
+    order_submission = OrderSubmission(order_id=order_id,side=OrderSide.BUY,qty=10,symbol=symbol,order_type=OrderType.MARKET)
     cancellation_submission = CancellationSubmission(order_id)
 
     cancellation_events = M1.handle_cancellation_arrival(start,cancellation_submission)
@@ -58,11 +61,12 @@ def test_cancellation_pre_fill():
 def test_cancellation_post_fill():
     md,start,end = helpers.market_data.get_simple_market_data_with_ts(5)
     latency = pd.Timedelta(minutes=0)
-    M1 = Market(md, CappedFill(10), latency)
+    symbol = "sym1"
+    M1 = Market({symbol : md}, CappedFill(10), latency)
 
     order_id = 0
 
-    order_submission = OrderSubmission(order_id,OrderSide.BUY,10,OrderType.MARKET)
+    order_submission = OrderSubmission(order_id=order_id,side=OrderSide.BUY,qty=10,symbol=symbol,order_type=OrderType.MARKET)
     cancellation_submission = CancellationSubmission(order_id)
 
     M1.handle_order_arrival(start,order_submission)
@@ -75,4 +79,3 @@ def test_cancellation_post_fill():
     assert isinstance(cancellation_events[0],CancellationArrivesAtBrokerEvent)
     assert order_id in M1.cancelled_orders
     assert cancellation_events[0].cancellation_result.cancellation_outcome == CancellationOutcome.NO_OP
-

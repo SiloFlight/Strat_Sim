@@ -35,6 +35,7 @@ class Order():
     qty : int
     state : "OrderState"
     fills : List["Fill"]
+    symbol : str
     limit : Optional[float] = None
 
     def __init__(self, order_request : "OrderRequest", order_id : int) -> None:
@@ -43,6 +44,7 @@ class Order():
         self.order_type = order_request.order_type
         self.qty = order_request.qty
         self.limit = order_request.limit
+        self.symbol = order_request.symbol
 
         self.state = OrderState.CREATED
         self.fills = []
@@ -99,7 +101,14 @@ class Order():
         return False
     
     def get_submission(self):
-        return OrderSubmission(self.order_id,self.side,self.qty,self.order_type,self.limit)
+        return OrderSubmission(
+            order_id=self.order_id,
+            side=self.side,
+            qty=self.qty,
+            order_type=self.order_type,
+            limit=self.limit,
+            symbol=self.symbol
+        )
     
 
     @property

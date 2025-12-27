@@ -89,7 +89,9 @@ def test_add_fill():
     # Live -> Partial Fill -> Filled
     O1 = get_live_order()
     init_qty = O1.qty
-    f1,f2 = Fill(0,init_qty//2,OrderSide.BUY,10,pd.Timestamp("2000-01-01")),Fill(0,init_qty-init_qty//2,OrderSide.BUY,10,pd.Timestamp("2000-01-01"))
+    symbol = "sym1"
+    f1 = Fill(order_id=0,qty=init_qty//2,symbol=symbol,side=OrderSide.BUY,fill_price=10,ts=pd.Timestamp("2000-01-01"))
+    f2 = Fill(order_id=0,qty=init_qty-init_qty//2,symbol=symbol,side=OrderSide.BUY,fill_price=10,ts=pd.Timestamp("2000-01-01"))
 
     O1.add_fill(f1)
 
@@ -103,7 +105,7 @@ def test_add_fill():
 
     # Live -> Filled
     O2 = get_live_order()
-    fill = Fill(0,init_qty,OrderSide.BUY,10,pd.Timestamp("2001-01-01"))
+    fill = Fill(order_id=0,qty=init_qty,symbol=symbol,side=OrderSide.BUY,fill_price=10,ts=pd.Timestamp("2000-01-01"))
 
     O2.add_fill(fill)
 
@@ -112,7 +114,7 @@ def test_add_fill():
 
     # Larger Fill than Possible
     with pytest.raises(ValueError,match="greater than remaining qty"):
-        get_live_order().add_fill(Fill(0,init_qty+1,OrderSide.BUY,10,pd.Timestamp("2001-01-01")))
+        get_live_order().add_fill(Fill(order_id=0,qty=init_qty+1,symbol=symbol,side=OrderSide.BUY,fill_price=10,ts=pd.Timestamp("2000-01-01")))
     
     with pytest.raises(RuntimeError,match="invalid order state"):
         get_created_order().add_fill(fill)
